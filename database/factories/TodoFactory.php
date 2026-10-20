@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Todo;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Category;
 
 /**
  * @extends Factory<Todo>
@@ -21,6 +22,7 @@ class TodoFactory extends Factory
             'title' => $this->faker->sentence(5),
             'description' => $this->faker->paragraph(1),
             'completed' => $this->faker->boolean(30),
+            'category_id' => Category::factory(),
         ];
     }
 

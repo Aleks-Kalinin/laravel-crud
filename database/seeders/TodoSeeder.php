@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Category;
 use App\Models\Todo;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
@@ -13,8 +14,10 @@ class TodoSeeder extends Seeder
      */
     public function run(): void
     {
-        Todo::factory(10)->create();
-        Todo::factory(2)->completed()->create();
-        Todo::factory(2)->create(['completed' => false]);
+        $categories = Category::all();
+
+        Todo::factory(10)->recycle($categories)->create();
+        Todo::factory(2)->completed()->recycle($categories)->create();
+        Todo::factory(2)->recycle($categories)->create(['completed' => false]);
     }
 }

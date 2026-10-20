@@ -26,6 +26,7 @@ class UpdateTodoRequest extends FormRequest
             'title' => ['sometimes', 'required', 'string', 'max:255'],
             'description' => ['nullable', 'string'],
             'completed' => ['boolean'],
+            'category_id' => ['nullable', 'exists:categories,id'],
         ];
     }
 }
