@@ -50,7 +50,21 @@ return [
     |
     */
 
-    'expiration' => null,
+    'expiration' => 30 * 24 * 60, // 30 days - absolute cap, measured from when the token was issued
+
+    /*
+    |--------------------------------------------------------------------------
+    | Idle Timeout Minutes
+    |--------------------------------------------------------------------------
+    |
+    | Number of minutes a token may go unused before it stops working. Unlike
+    | "expiration" above, this window is measured from the token's last use,
+    | so it slides forward while someone is active. Enforced by the callback
+    | registered in AppServiceProvider. Set to null to disable.
+    |
+    */
+
+    'idle_timeout' => 24 * 60, // 24 hours
 
     /*
     |--------------------------------------------------------------------------
