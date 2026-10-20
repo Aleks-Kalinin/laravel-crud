@@ -18,6 +18,7 @@ class Todo extends Model
         'description',
         'completed',
         'category_id',
+        'user_id',
     ];
     
     protected function casts(): array
@@ -30,5 +31,10 @@ class Todo extends Model
     public function category()
     {
         return $this->belongsTo(Category::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
     }
 }
