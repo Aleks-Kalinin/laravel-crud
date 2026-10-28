@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Validation\ValidationException;
 use App\Http\Requests\RegisterRequest;
 use App\Http\Requests\LoginRequest;
 
@@ -12,40 +13,45 @@ class AuthController extends Controller
 {
     /**
      * Handle user registration.
+     *
+     * The SPA authenticates against the session rather than a bearer token, so
+     * nothing secret is returned in the body: the credential is the HttpOnly
+     * session cookie Laravel sets on the response, which JavaScript cannot read.
      */
     public function register(RegisterRequest $request)
     {
         $user = User::create($request->validated());
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        Auth::login($user);
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ], 201);
+        $request->session()->regenerate();
+
+        return response()->json($user, 201);
     }
 
     public function login(LoginRequest $request)
     {
-        $credentials = $request->validated();
-
-        $user = User::where('email', $credentials['email'])->first();
-
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-            return response()->json(['message' => 'Invalid credentials'], 401);
+        if (! Auth::attempt($request->validated(), $request->boolean('remember'))) {
+            // 422 rather than 401 so the SPA can tell "these credentials are
+            // wrong" apart from "your session expired", which it handles by
+            // bouncing the user back to the login screen.
+            throw ValidationException::withMessages([
+                'email' => __('auth.failed'),
+            ]);
         }
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Issue a fresh session id now that the privilege level changed.
+        $request->session()->regenerate();
 
-        return response()->json([
-            'access_token' => $token,
-            'token_type' => 'Bearer',
-        ]);
+        return response()->json($request->user());
     }
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        Auth::guard('web')->logout();
+
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
         return response()->json(['message' => 'Logged out successfully']);
     }
